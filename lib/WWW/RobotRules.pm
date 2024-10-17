@@ -1,6 +1,6 @@
 package WWW::RobotRules;
 
-$VERSION = "6.02";
+our $VERSION = "6.02";
 sub Version { $VERSION; }
 
 use strict;
@@ -179,8 +179,7 @@ sub dump;
 
 package WWW::RobotRules::InCore;
 
-use vars qw(@ISA);
-@ISA = qw(WWW::RobotRules);
+our @ISA = qw(WWW::RobotRules);
 
 
 
