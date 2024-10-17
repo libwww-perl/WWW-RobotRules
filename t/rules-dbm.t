@@ -1,12 +1,13 @@
+use strict;
+use warnings;
 
 print "1..13\n";
 
-
 use WWW::RobotRules::AnyDBM_File;
 
-$file = "test-$$";
+my $file = "test-$$";
 
-$r = WWW::RobotRules::AnyDBM_File->new("myrobot/2.0", $file);
+my $r = WWW::RobotRules::AnyDBM_File->new("myrobot/2.0", $file);
 
 $r->parse("http://www.aas.no/robots.txt", "");
 
@@ -19,7 +20,7 @@ print "ok 1\n";
 $r->push_rules("www.sn.no:80", "/aas", "/per");
 $r->push_rules("www.sn.no:80", "/god", "/old");
 
-@r = $r->rules("www.sn.no:80");
+my @r = $r->rules("www.sn.no:80");
 print "Rules: @r\n";
 
 print "not " if "@r" ne "/aas /per /god /old";
@@ -50,21 +51,24 @@ print "ok 5\n";
 $r = undef;
 
 # Try to reopen the database without a name specified
-$r = new WWW::RobotRules::AnyDBM_File undef, $file;
+$r = WWW::RobotRules::AnyDBM_File->new(undef, $file);
 $r->visit("www.aas.no:80");
 
 print "not " if $r->no_visits("www.aas.no:80") != 3;
 print "ok 6\n";
 
-print "Agent-Name: ", $r->agent, "\n";
+my $agent = $r->agent;
+$agent = ''
+    unless defined $agent;
+print "Agent-Name: ", $agent, "\n";
 print "not " if $r->agent ne "myrobot";
 print "ok 7\n";
 
 $r = undef;
 
 print "*** Dump of database ***\n";
-tie(%cat, AnyDBM_File, $file, 0, 0644) or die "Can't tie: $!";
-while (($key,$val) = each(%cat)) {
+tie(my %cat, 'AnyDBM_File', $file, 0, 0644) or die "Can't tie: $!";
+while (my ($key,$val) = each(%cat)) {
     print "$key\t$val\n";
 }
 print "******\n";
@@ -107,8 +111,8 @@ print "ok 12\n";
 $r = undef;
 
 print "*** Dump of database ***\n";
-tie(%cat, AnyDBM_File, $file, 0, 0644) or die "Can't tie: $!";
-while (($key,$val) = each(%cat)) {
+tie(%cat, 'AnyDBM_File', $file, 0, 0644) or die "Can't tie: $!";
+while (my ($key,$val) = each(%cat)) {
     print "$key\t$val\n";
 }
 print "******\n";

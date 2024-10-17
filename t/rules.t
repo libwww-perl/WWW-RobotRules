@@ -1,19 +1,8 @@
-#!/local/bin/perl
-
-=head1 NAME
-
-robot-rules.t
-
-=head1 DESCRIPTION
-
-Test a number of different A</robots.txt> files against a number
-of different User-agents.
-
-=cut
+use strict;
+use warnings;
 
 require WWW::RobotRules;
 use Carp;
-use strict;
 
 print "1..50\n"; # for Test::Harness
 

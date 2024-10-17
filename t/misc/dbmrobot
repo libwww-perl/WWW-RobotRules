@@ -1,15 +1,17 @@
 #!/local/perl/bin/perl -w
+use strict;
+use warnings;
 
 use URI::URL;
-$url = url(shift) || die "Usage: $0 <url>\n";
+my $url = url(shift) || die "Usage: $0 <url>\n";
 
 require WWW::RobotRules::AnyDBM_File;
 require LWP::RobotUA;
 
-$botname = "Spider/0.1";
+my $botname = "Spider/0.1";
 
-$rules = WWW::RobotRules::AnyDBM_File->new($botname, 'robotdb');
-$ua = LWP::RobotUA->new($botname, 'gisle@aas.no', $rules);
+my $rules = WWW::RobotRules::AnyDBM_File->new($botname, 'robotdb');
+my $ua = LWP::RobotUA->new($botname, 'gisle@aas.no', $rules);
 $ua->delay(0.1);
 
 my $req = HTTP::Request->new(GET => $url);
