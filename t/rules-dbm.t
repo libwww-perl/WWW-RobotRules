@@ -118,8 +118,8 @@ untie %cat;			# Otherwise the next line fails on DOSish
 while (unlink("$file", "$file.pag", "$file.dir", "$file.db")) {}
 
 # Try open a an emty database without specifying a name
-eval { 
-   $r = new WWW::RobotRules::AnyDBM_File undef, $file;
+eval {
+    $r = new WWW::RobotRules::AnyDBM_File undef, $file;
 };
 print $@;
 print "not " unless $@;  # should fail

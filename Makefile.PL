@@ -17,9 +17,9 @@ WriteMakefile(
         'URI' => "1.10",
     },
     META_MERGE => {
-	resources => {
+        resources => {
             repository => 'http://github.com/gisle/www-robotrules',
-	    MailingList => 'mailto:libwww@perl.org',
+            MailingList => 'mailto:libwww@perl.org',
         }
     },
 );
