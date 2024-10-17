@@ -1,10 +1,9 @@
 use strict;
 use warnings;
 
-require WWW::RobotRules;
-use Carp;
+use Test::More;
 
-print "1..50\n"; # for Test::Harness
+use WWW::RobotRules;
 
 # We test a number of different /robots.txt files,
 #
@@ -197,9 +196,7 @@ my @tests1 = (
     # the maximum at the top
 );
 
-my $t;
-
-for $t (@tests1) {
+for my $t (@tests1) {
     my ($content, $ua) = splice(@$t, 0, 2);
 
     my $robotsrules = WWW::RobotRules->new($ua);
@@ -209,10 +206,9 @@ for $t (@tests1) {
     while(($num, $path, $expected) = splice(@$t, 0, 3)) {
         my $allowed = $robotsrules->allowed($path);
         $allowed = 1 if $allowed;
-        if($allowed != $expected) {
-            $robotsrules->dump;
-            confess "Test Failed: $ua => $path ($allowed != $expected)";
-        }
-        print "ok $num\n";
+        is $allowed, $expected, "$ua => $path"
+            or $robotsrules->dump;
     }
 }
+
+done_testing;

@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-print "1..13\n";
+use Test::More;
 
 use WWW::RobotRules::AnyDBM_File;
 
@@ -13,40 +13,32 @@ $r->parse("http://www.aas.no/robots.txt", "");
 
 $r->visit("www.aas.no:80");
 
-print "not " if $r->no_visits("www.aas.no:80") != 1;
-print "ok 1\n";
-
+is $r->no_visits("www.aas.no:80"), 1;
 
 $r->push_rules("www.sn.no:80", "/aas", "/per");
 $r->push_rules("www.sn.no:80", "/god", "/old");
 
 my @r = $r->rules("www.sn.no:80");
-print "Rules: @r\n";
 
-print "not " if "@r" ne "/aas /per /god /old";
-print "ok 2\n";
+is "@r", "/aas /per /god /old";
 
 $r->clear_rules("per");
 $r->clear_rules("www.sn.no:80");
 
 @r = $r->rules("www.sn.no:80");
-print "Rules: @r\n";
 
-print "not " if "@r" ne "";
-print "ok 3\n";
+is "@r", "";
 
 $r->visit("www.aas.no:80", time+10);
 $r->visit("www.sn.no:80");
 
-print "No visits: ", $r->no_visits("www.aas.no:80"), "\n";
-print "Last visit: ", $r->last_visit("www.aas.no:80"), "\n";
-print "Fresh until: ", $r->fresh_until("www.aas.no:80"), "\n";
+note "No visits: " . $r->no_visits("www.aas.no:80");
+note "Last visit: " . $r->last_visit("www.aas.no:80");
+note "Fresh until: " . $r->fresh_until("www.aas.no:80");
 
-print "not " if $r->no_visits("www.aas.no:80") != 2;
-print "ok 4\n";
+is $r->no_visits("www.aas.no:80"), 2;
 
-print "not " if abs($r->last_visit("www.sn.no:80") - time) > 2;
-print "ok 5\n";
+cmp_ok abs($r->last_visit("www.sn.no:80") - time), '<=', 2;
 
 $r = undef;
 
@@ -54,35 +46,29 @@ $r = undef;
 $r = WWW::RobotRules::AnyDBM_File->new(undef, $file);
 $r->visit("www.aas.no:80");
 
-print "not " if $r->no_visits("www.aas.no:80") != 3;
-print "ok 6\n";
+is $r->no_visits("www.aas.no:80"), 3;
 
-my $agent = $r->agent;
-$agent = ''
-    unless defined $agent;
-print "Agent-Name: ", $agent, "\n";
-print "not " if $r->agent ne "myrobot";
-print "ok 7\n";
+note "Agent-Name: ", $r->agent;
+is $r->agent, 'myrobot';
 
 $r = undef;
 
-print "*** Dump of database ***\n";
+note "*** Dump of database ***";
 tie(my %cat, 'AnyDBM_File', $file, 0, 0644) or die "Can't tie: $!";
 while (my ($key,$val) = each(%cat)) {
-    print "$key\t$val\n";
+    note "$key\t$val";
 }
-print "******\n";
+note "******";
 
 untie %cat;
 
 # Try to open database with a different agent name
 $r = WWW::RobotRules::AnyDBM_File->new("MOMSpider/2.0", $file);
 
-print "not " if $r->no_visits("www.sn.no:80");
-print "ok 8\n";
+is $r->no_visits("www.sn.no:80"), 0;
 
 # Try parsing
-$r->parse("http://www.sn.no:8080/robots.txt", <<EOT, (time + 3));
+$r->parse("http://www.sn.no:8080/robots.txt", <<EOT, (time + 1));
 
 User-Agent: *
 Disallow: /
@@ -94,30 +80,25 @@ Disallow: /bar
 EOT
 
 @r = $r->rules("www.sn.no:8080");
-print "not " if "@r" ne "/foo /bar";
-print "ok 9\n";
+is "@r", "/foo /bar";
 
-print "not " if $r->allowed("http://www.sn.no") >= 0;
-print "ok 10\n";
+cmp_ok $r->allowed("http://www.sn.no"), '<', 0;
 
-print "not " if $r->allowed("http://www.sn.no:8080/foo/gisle");
-print "ok 11\n";
+ok !$r->allowed("http://www.sn.no:8080/foo/gisle");
 
-sleep(5);  # wait until file has expired
-print "not " if $r->allowed("http://www.sn.no:8080/foo/gisle") >= 0;
-print "ok 12\n";
-
+sleep(2);  # wait until file has expired
+cmp_ok $r->allowed("http://www.sn.no:8080/foo/gisle"), '<', 0;
 
 $r = undef;
 
-print "*** Dump of database ***\n";
+note "*** Dump of database ***";
 tie(%cat, 'AnyDBM_File', $file, 0, 0644) or die "Can't tie: $!";
 while (my ($key,$val) = each(%cat)) {
-    print "$key\t$val\n";
+    note "$key\t$val";
 }
-print "******\n";
+note "******";
 
-untie %cat;			# Otherwise the next line fails on DOSish
+untie %cat;                 # Otherwise the next line fails on DOSish
 
 while (unlink("$file", "$file.pag", "$file.dir", "$file.db")) {}
 
@@ -125,8 +106,8 @@ while (unlink("$file", "$file.pag", "$file.dir", "$file.db")) {}
 eval {
     $r = WWW::RobotRules::AnyDBM_File->new(undef, $file);
 };
-print $@;
-print "not " unless $@;  # should fail
-print "ok 13\n";
+isnt $@, "";
 
 unlink "$file", "$file.pag", "$file.dir", "$file.db";
+
+done_testing;
