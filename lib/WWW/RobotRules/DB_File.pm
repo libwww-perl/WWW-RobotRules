@@ -142,7 +142,7 @@ This is a subclass of L<WWW::RobotRules>, so it implements the same methods
 
 =over 4
 
-=item $rules new WWW::RobotRules::DB_File 'my-robot/1.0', /path/cachefile
+=item $rules = WWW::RobotRules::DB_File->new('my-robot/1.0', /path/cachefile)
 
 This is the constructor. The only difference from the original constructor
 from L<WWW::RobotRules> is that you here has to specify a cache file as well.

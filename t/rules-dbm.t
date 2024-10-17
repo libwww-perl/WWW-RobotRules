@@ -6,7 +6,7 @@ use WWW::RobotRules::AnyDBM_File;
 
 $file = "test-$$";
 
-$r = new WWW::RobotRules::AnyDBM_File "myrobot/2.0", $file;
+$r = WWW::RobotRules::AnyDBM_File->new("myrobot/2.0", $file);
 
 $r->parse("http://www.aas.no/robots.txt", "");
 
@@ -72,7 +72,7 @@ print "******\n";
 untie %cat;
 
 # Try to open database with a different agent name
-$r = new WWW::RobotRules::AnyDBM_File "MOMSpider/2.0", $file;
+$r = WWW::RobotRules::AnyDBM_File->new("MOMSpider/2.0", $file);
 
 print "not " if $r->no_visits("www.sn.no:80");
 print "ok 8\n";
@@ -119,7 +119,7 @@ while (unlink("$file", "$file.pag", "$file.dir", "$file.db")) {}
 
 # Try open a an emty database without specifying a name
 eval {
-    $r = new WWW::RobotRules::AnyDBM_File undef, $file;
+    $r = WWW::RobotRules::AnyDBM_File->new(undef, $file);
 };
 print $@;
 print "not " unless $@;  # should fail
