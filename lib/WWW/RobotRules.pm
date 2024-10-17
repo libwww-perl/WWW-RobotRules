@@ -1,9 +1,9 @@
 package WWW::RobotRules;
+use strict;
 
 our $VERSION = "6.02";
 sub Version { $VERSION; }
 
-use strict;
 use URI ();
 
 sub new {

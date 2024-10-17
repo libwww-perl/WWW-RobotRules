@@ -1,13 +1,13 @@
 package WWW::RobotRules::AnyDBM_File;
+use strict;
 
-require  WWW::RobotRules;
-@ISA = qw(WWW::RobotRules);
-$VERSION = "6.00";
+use WWW::RobotRules ();
+our @ISA = qw(WWW::RobotRules);
+our $VERSION = "6.00";
 
 use Carp ();
 use AnyDBM_File;
 use Fcntl;
-use strict;
 
 sub new {
     my ($class, $ua, $file) = @_;

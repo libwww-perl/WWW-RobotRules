@@ -1,8 +1,9 @@
 package WWW::RobotRules::DB_File;
+use strict;
 
-require  WWW::RobotRules;
-@ISA = qw(WWW::RobotRules);
-$VERSION = "6.00";
+use WWW::RobotRules ();
+our @ISA = qw(WWW::RobotRules);
+our $VERSION = "6.00";
 
 use Carp ();
 use DB_File;
