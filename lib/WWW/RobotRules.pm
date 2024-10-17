@@ -308,15 +308,14 @@ WWW::RobotRules - database of robots.txt-derived permissions
 
 =head1 DESCRIPTION
 
-This module parses F</robots.txt> files as specified in
-"A Standard for Robot Exclusion", at
-<http://www.robotstxt.org/wc/norobots.html>
+This module parses F</robots.txt> files as specified in at
+L<https://www.robotstxt.org/robotstxt.html>.
 Webmasters can use the F</robots.txt> file to forbid conforming
 robots from accessing parts of their web site.
 
-The parsed files are kept in a WWW::RobotRules object, and this object
+The parsed files are kept in a C<WWW::RobotRules> object, and this object
 provides methods to check if access to a given URL is prohibited.  The
-same WWW::RobotRules object can be used for one or more parsed
+same C<WWW::RobotRules> object can be used for one or more parsed
 F</robots.txt> files on any number of hosts.
 
 The following methods are provided:
@@ -339,16 +338,14 @@ Returns TRUE if this robot is allowed to retrieve this URL.
 
 =item $rules->agent([$name])
 
-Get/set the agent name. NOTE: Changing the agent name will clear the robots.txt
-rules and expire times out of the cache.
+Get/set the agent name. NOTE: Changing the agent name will clear the
+F<robots.txt> rules and expire times out of the cache.
 
 =back
 
 =head1 ROBOTS.TXT
 
-The format and semantics of the "/robots.txt" file are as follows
-(this is an edited abstract of
-<http://www.robotstxt.org/wc/norobots.html>):
+The format and semantics of the "/robots.txt" file are as follows:
 
 The file consists of one or more records separated by one or more
 blank lines. Each record contains lines of the form
