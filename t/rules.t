@@ -63,14 +63,14 @@ User-agent: Belle
 Disallow: /west-wing/ # except the west wing!
 # It's good to be the Prince...
 User-agent: Beast
-Disallow: 
+Disallow:
 EOM
 
 # same thing backwards
 my $content6 = <<EOM;
 # It's good to be the Prince...
 User-agent: Beast
-Disallow: 
+Disallow:
 # The castle is your home now, so you can go anywhere you like.
 User-agent: Belle
 Disallow: /west-wing/ # except the west wing!
