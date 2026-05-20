@@ -3,7 +3,7 @@ use warnings;
 
 use Test::More;
 
-use WWW::RobotRules;
+use WWW::RobotRules ();
 
 # We test a number of different /robots.txt files,
 #

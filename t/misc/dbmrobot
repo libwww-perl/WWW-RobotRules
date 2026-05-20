@@ -2,11 +2,11 @@
 use strict;
 use warnings;
 
-use URI::URL;
+use URI::URL qw( url );
 my $url = url(shift) || die "Usage: $0 <url>\n";
 
-require WWW::RobotRules::AnyDBM_File;
-require LWP::RobotUA;
+use WWW::RobotRules::AnyDBM_File ();
+use LWP::RobotUA ();
 
 my $botname = "Spider/0.1";
 

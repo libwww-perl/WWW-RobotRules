@@ -7,7 +7,7 @@ our $VERSION = '6.00';
 
 use Carp ();
 use AnyDBM_File;
-use Fcntl;
+use Fcntl qw( O_CREAT O_RDWR );
 
 sub new {
     my ($class, $ua, $file) = @_;
