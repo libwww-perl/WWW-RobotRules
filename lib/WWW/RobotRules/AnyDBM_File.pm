@@ -153,7 +153,7 @@ the name of the DBM file to use.  If the DBM file already exists, then
 you can specify undef as agent name as the name can be obtained from
 the DBM database.
 
-=head1 SECURITY
+=head1 SECURITY CONSIDERATIONS
 
 The caller-supplied DBM filename must reside in a directory writable
 only by the same user that runs this code. The underlying
