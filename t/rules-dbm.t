@@ -11,6 +11,17 @@ my $file = "$dir/robotdb";
 
 my $r = WWW::RobotRules::AnyDBM_File->new("myrobot/2.0", $file);
 
+# Cache backing file(s) must have no group/world permission bits.
+if ($^O ne 'MSWin32') {
+    my @backing = glob "$file*";
+    ok scalar @backing, "DBM backing file(s) exist after construction";
+    for my $f (@backing) {
+        my $mode = (stat $f)[2] & 07777;
+        is $mode & 0077, 0,
+            "$f mode " . sprintf("%04o", $mode) . " has no group/world bits";
+    }
+}
+
 $r->parse("http://www.aas.no/robots.txt", "");
 
 $r->visit("www.aas.no:80");
