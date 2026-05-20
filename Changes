@@ -1,5 +1,22 @@
 {{$NEXT}}
 
+Security fix. Eliminate a symlink-follow TOCTOU primitive in
+WWW::RobotRules::AnyDBM_File::agent(), tighten the on-disk cache
+mode from 0640 to 0600, and harden t/rules-dbm.t against symlink
+attacks on its tempfile during package builds.
+
+The previous untie/tie(O_TRUNC) sequence in agent() could be raced
+by a local attacker with write access to the cache directory to
+overwrite arbitrary files writable by the crawler user. Stale-data
+reset now goes through the tied-hash CLEAR, which avoids the
+filesystem-level truncate. A new SECURITY POD section documents the
+residual caller-trust requirement: the constructor's tie still
+follows symlinks because AnyDBM_File cannot portably plumb
+O_NOFOLLOW, so the caller must store the cache file in a directory
+writable only by the user that runs the code.
+
+CWE-377, CWE-378, CWE-379.
+
 _______________________________________________________________________________
 2012-02-18 WWW-RobotRules 6.02
 
