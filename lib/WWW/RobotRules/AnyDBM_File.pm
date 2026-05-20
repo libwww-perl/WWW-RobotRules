@@ -15,7 +15,7 @@ sub new {
 
     my $self = bless { }, $class;
     $self->{'filename'} = $file;
-    tie %{$self->{'dbm'}}, 'AnyDBM_File', $file, O_CREAT|O_RDWR, 0640
+    tie %{$self->{'dbm'}}, 'AnyDBM_File', $file, O_CREAT|O_RDWR, 0600
         or Carp::croak("Can't open $file: $!");
 
     if ($ua) {
@@ -36,10 +36,9 @@ sub agent {
     if (defined $newname) {
         $newname =~ s!/?\s*\d+.\d+\s*$!!;  # loose version
         unless ($old && $old eq $newname) {
-        # Old info is now stale.
-            my $file = $self->{'filename'};
-            untie %{$self->{'dbm'}};
-            tie %{$self->{'dbm'}}, 'AnyDBM_File', $file, O_TRUNC|O_RDWR, 0640;
+            # Old info is now stale. Clear all keys through the tied
+            # interface rather than untie+tie(O_TRUNC), which is a
+            # symlink-follow TOCTOU on the DBM-backing file(s).
             %{$self->{'dbm'}} = ();
             $self->{'dbm'}{"|ua-name|"} = $newname;
         }
@@ -153,6 +152,17 @@ The constructor (the new() method) takes an extra argument specifying
 the name of the DBM file to use.  If the DBM file already exists, then
 you can specify undef as agent name as the name can be obtained from
 the DBM database.
+
+=head1 SECURITY
+
+The caller-supplied DBM filename must reside in a directory writable
+only by the same user that runs this code. The underlying
+C<AnyDBM_File> backends open the file via the C C<open(2)> syscall
+without C<O_NOFOLLOW>, so a symlink at the cache path (or at its
+C<.dir>/C<.pag>/C<.db> siblings) will be followed and the linked
+target may be overwritten with DBM page data. The cache file is
+created with mode C<0600>; callers that need different permissions
+can C<chmod> after construction.
 
 =head1 SEE ALSO
 
