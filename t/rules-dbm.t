@@ -2,10 +2,12 @@ use strict;
 use warnings;
 
 use Test::More;
+use File::Temp ();
 
 use WWW::RobotRules::AnyDBM_File;
 
-my $file = "test-$$";
+my $dir  = File::Temp::tempdir( CLEANUP => 1 );
+my $file = "$dir/robotdb";
 
 my $r = WWW::RobotRules::AnyDBM_File->new("myrobot/2.0", $file);
 
