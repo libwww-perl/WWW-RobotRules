@@ -2,9 +2,9 @@ use strict;
 use warnings;
 
 use Test::More;
-use File::Temp qw(tempdir);
+use File::Temp qw( tempdir );
 
-use WWW::RobotRules::AnyDBM_File;
+use WWW::RobotRules::AnyDBM_File ();
 
 my $dir  = tempdir( CLEANUP => 1 );
 my $file = "$dir/robotdb";
