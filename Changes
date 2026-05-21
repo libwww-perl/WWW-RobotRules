@@ -1,6 +1,20 @@
 Revision history for Perl distribution WWW-RobotRules
 
 {{$NEXT}}
+    - WWW::RobotRules::parse() now caps input size at the
+      max_parse_bytes constructor option (default 500 KiB). An
+      oversized body emits one warning and returns without
+      touching the cache, so a hostile robots.txt cannot poison
+      previously-cached rules.
+    - Per-parse "Malformed record" / "Disallow without preceding
+      User-agent" warnings share a counter capped at the
+      max_parse_warnings constructor option (default 100), with
+      excess collapsed into a trailing summary.
+    - Non-printable bytes in warn payloads are escaped as \xNN to
+      prevent terminal-escape-sequence injection through hostile
+      content. Byte-string robots.txt is not re-encoded, so a
+      Latin-1 "Disallow: /\xe9" still blocks /%E9 instead of
+      being mangled to /%C3%A9.
 
 6.03      2026-05-23 02:23:28Z
     - Doing a proper version bump.
