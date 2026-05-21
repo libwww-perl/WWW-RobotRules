@@ -3,7 +3,7 @@ use strict;
 
 use WWW::RobotRules ();
 our @ISA = qw(WWW::RobotRules);
-our $VERSION = '6.00';
+our $VERSION = '6.03';
 
 use Carp ();
 use AnyDBM_File;
