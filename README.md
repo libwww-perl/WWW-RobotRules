@@ -4,31 +4,29 @@ WWW::RobotRules - database of robots.txt-derived permissions
 
 # SYNOPSIS
 
-```perl
-use WWW::RobotRules;
-my $rules = WWW::RobotRules->new('MOMspider/1.0');
+    use WWW::RobotRules;
+    my $rules = WWW::RobotRules->new('MOMspider/1.0');
 
-use LWP::Simple qw(get);
+    use LWP::Simple qw(get);
 
-{
-    my $url = "http://some.place/robots.txt";
-    my $robots_txt = get $url;
-    $rules->parse($url, $robots_txt) if defined $robots_txt;
-}
+    {
+        my $url = "http://some.place/robots.txt";
+        my $robots_txt = get $url;
+        $rules->parse($url, $robots_txt) if defined $robots_txt;
+    }
 
-{
-    my $url = "http://some.other.place/robots.txt";
-    my $robots_txt = get $url;
-    $rules->parse($url, $robots_txt) if defined $robots_txt;
-}
+    {
+        my $url = "http://some.other.place/robots.txt";
+        my $robots_txt = get $url;
+        $rules->parse($url, $robots_txt) if defined $robots_txt;
+    }
 
-# Now we can check if a URL is valid for those servers
-# whose "robots.txt" files we've gotten and parsed:
-if($rules->allowed($url)) {
-    $c = get $url;
-    ...
-}
-```
+    # Now we can check if a URL is valid for those servers
+    # whose "robots.txt" files we've gotten and parsed:
+    if($rules->allowed($url)) {
+        $c = get $url;
+        ...
+    }
 
 # DESCRIPTION
 
@@ -70,9 +68,7 @@ The format and semantics of the "/robots.txt" file are as follows:
 The file consists of one or more records separated by one or more
 blank lines. Each record contains lines of the form
 
-```
-<field-name>: <value>
-```
+    <field-name>: <value>
 
 The field name is case insensitive.  Text after the '#' character on a
 line is ignored during parsing.  This is used for comments.  The
@@ -108,47 +104,39 @@ Unrecognized records are ignored.
 The following example "/robots.txt" file specifies that no robots
 should visit any URL starting with "/cyberworld/map/" or "/tmp/":
 
-```
-User-agent: *
-Disallow: /cyberworld/map/ # This is an infinite virtual URL space
-Disallow: /tmp/ # these will soon disappear
-```
+    User-agent: *
+    Disallow: /cyberworld/map/ # This is an infinite virtual URL space
+    Disallow: /tmp/ # these will soon disappear
 
 This example "/robots.txt" file specifies that no robots should visit
 any URL starting with "/cyberworld/map/", except the robot called
 "cybermapper":
 
-```
-User-agent: *
-Disallow: /cyberworld/map/ # This is an infinite virtual URL space
+    User-agent: *
+    Disallow: /cyberworld/map/ # This is an infinite virtual URL space
 
-# Cybermapper knows where to go.
-User-agent: cybermapper
-Disallow:
-```
+    # Cybermapper knows where to go.
+    User-agent: cybermapper
+    Disallow:
 
 This example indicates that no robots should visit this site further:
 
-```
-# go away
-User-agent: *
-Disallow: /
-```
+    # go away
+    User-agent: *
+    Disallow: /
 
 This is an example of a malformed robots.txt file.
 
-```perl
-# robots.txt for ancientcastle.example.com
-# I've locked myself away.
-User-agent: *
-Disallow: /
-# The castle is your home now, so you can go anywhere you like.
-User-agent: Belle
-Disallow: /west-wing/ # except the west wing!
-# It's good to be the Prince...
-User-agent: Beast
-Disallow:
-```
+    # robots.txt for ancientcastle.example.com
+    # I've locked myself away.
+    User-agent: *
+    Disallow: /
+    # The castle is your home now, so you can go anywhere you like.
+    User-agent: Belle
+    Disallow: /west-wing/ # except the west wing!
+    # It's good to be the Prince...
+    User-agent: Beast
+    Disallow:
 
 This file is missing the required blank lines between records.
 However, the intention is clear.
@@ -159,10 +147,8 @@ However, the intention is clear.
 
 # COPYRIGHT
 
-```
-Copyright 1995-2009, Gisle Aas
-Copyright 1995, Martijn Koster
-```
+    Copyright 1995-2009, Gisle Aas
+    Copyright 1995, Martijn Koster
 
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
