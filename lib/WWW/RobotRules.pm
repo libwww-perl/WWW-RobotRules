@@ -7,48 +7,48 @@ sub Version { $VERSION; }
 use URI ();
 
 sub new {
-    my($class, $ua) = @_;
+    my ($class, $ua) = @_;
 
     # This ugly hack is needed to ensure backwards compatibility.
     # The "WWW::RobotRules" class is now really abstract.
     $class = "WWW::RobotRules::InCore" if $class eq "WWW::RobotRules";
 
-    my $self = bless { }, $class;
+    my $self = bless {}, $class;
     $self->agent($ua);
     $self;
 }
 
 sub parse {
-    my($self, $robot_txt_uri, $txt, $fresh_until) = @_;
+    my ($self, $robot_txt_uri, $txt, $fresh_until) = @_;
     $robot_txt_uri = URI->new("$robot_txt_uri");
     my $netloc = $robot_txt_uri->host . ":" . $robot_txt_uri->port;
 
     $self->clear_rules($netloc);
-    $self->fresh_until($netloc, $fresh_until || (time + 365*24*3600));
+    $self->fresh_until($netloc, $fresh_until || (time + 365 * 24 * 3600));
 
     my $ua;
-    my $is_me = 0;              # 1 iff this record is for me
-    my $is_anon = 0;            # 1 iff this record is for *
-    my $seen_disallow = 0;      # watch for missing record separators
-    my @me_disallowed = ();     # rules disallowed for me
-    my @anon_disallowed = ();   # rules disallowed for *
+    my $is_me           = 0;     # 1 iff this record is for me
+    my $is_anon         = 0;     # 1 iff this record is for *
+    my $seen_disallow   = 0;     # watch for missing record separators
+    my @me_disallowed   = ();    # rules disallowed for me
+    my @anon_disallowed = ();    # rules disallowed for *
 
     # blank lines are significant, so turn CRLF into LF to avoid generating
     # false ones
     $txt =~ s/\015\012/\012/g;
 
     # split at \012 (LF) or \015 (CR) (Mac text files have just CR for EOL)
-    for(split(/[\012\015]/, $txt)) {
+    for (split(/[\012\015]/, $txt)) {
 
         # Lines containing only a comment are discarded completely, and
         # therefore do not indicate a record boundary.
         next if /^\s*\#/;
 
-        s/\s*\#.*//;        # remove comments at end-of-line
+        s/\s*\#.*//;    # remove comments at end-of-line
 
-        if (/^\s*$/) {	    # blank line
-            last if $is_me; # That was our record. No need to read the rest.
-            $is_anon = 0;
+        if (/^\s*$/) {  # blank line
+            last if $is_me;    # That was our record. No need to read the rest.
+            $is_anon       = 0;
             $seen_disallow = 0;
         }
         elsif (/^\s*User-Agent\s*:\s*(.*)/i) {
@@ -56,6 +56,7 @@ sub parse {
             $ua =~ s/\s+$//;
 
             if ($seen_disallow) {
+
                 # treat as start of a new record
                 $seen_disallow = 0;
                 last if $is_me; # That was our record. No need to read the rest.
@@ -63,20 +64,23 @@ sub parse {
             }
 
             if ($is_me) {
+
                 # This record already had a User-agent that
                 # we matched, so just continue.
             }
             elsif ($ua eq '*') {
                 $is_anon = 1;
             }
-            elsif($self->is_me($ua)) {
+            elsif ($self->is_me($ua)) {
                 $is_me = 1;
             }
         }
         elsif (/^\s*Disallow\s*:\s*(.*)/i) {
             unless (defined $ua) {
-                warn "RobotRules <$robot_txt_uri>: Disallow without preceding User-agent\n" if $^W;
-                $is_anon = 1;  # assume that User-agent: * was intended
+                warn
+                    "RobotRules <$robot_txt_uri>: Disallow without preceding User-agent\n"
+                    if $^W;
+                $is_anon = 1;    # assume that User-agent: * was intended
             }
             my $disallow = $1;
             $disallow =~ s/\s+$//;
@@ -103,6 +107,7 @@ sub parse {
             }
         }
         elsif (/\S\s*:/) {
+
             # ignore
         }
         else {
@@ -124,13 +129,13 @@ sub parse {
 # name of this robot
 #
 sub is_me {
-    my($self, $ua_line) = @_;
+    my ($self, $ua_line) = @_;
     my $me = $self->agent;
 
     # See whether my short-name is a substring of the
     #  "User-Agent: ..." line that we were passed:
 
-    if(index(lc($me), lc($ua_line)) >= 0) {
+    if (index(lc($me), lc($ua_line)) >= 0) {
         return 1;
     }
     else {
@@ -140,11 +145,12 @@ sub is_me {
 
 
 sub allowed {
-    my($self, $uri) = @_;
+    my ($self, $uri) = @_;
     $uri = URI->new("$uri");
 
     return 1 unless $uri->scheme eq 'http' or $uri->scheme eq 'https';
-     # Robots.txt applies to only those schemes.
+
+    # Robots.txt applies to only those schemes.
 
     my $netloc = $uri->host . ":" . $uri->port;
 
@@ -181,15 +187,16 @@ sub agent {
     my ($self, $name) = @_;
     my $old = $self->{'ua'};
     if ($name) {
+
         # Strip it so that it's just the short name.
         # I.e., "FooBot"                                      => "FooBot"
         #       "FooBot/1.2"                                  => "FooBot"
         #       "FooBot/1.2 [http://foobot.int; foo@bot.int]" => "FooBot"
 
-        $name = $1 if $name =~ m/(\S+)/; # get first word
-        $name =~ s!/.*!!;  # get rid of version
+        $name = $1 if $name =~ m/(\S+)/;    # get first word
+        $name =~ s!/.*!!;                   # get rid of version
         unless ($old && $old eq $name) {
-            delete $self->{'loc'}; # all old info is now stale
+            delete $self->{'loc'};          # all old info is now stale
             $self->{'ua'} = $name;
         }
     }
@@ -198,7 +205,7 @@ sub agent {
 
 
 sub visit {
-    my($self, $netloc, $time) = @_;
+    my ($self, $netloc, $time) = @_;
     return unless $netloc;
     $time ||= time;
     $self->{'loc'}{$netloc}{'last'} = $time;
@@ -235,19 +242,19 @@ sub fresh_until {
 
 
 sub push_rules {
-    my($self, $netloc, @rules) = @_;
-    push (@{$self->{'loc'}{$netloc}{'rules'}}, @rules);
+    my ($self, $netloc, @rules) = @_;
+    push(@{$self->{'loc'}{$netloc}{'rules'}}, @rules);
 }
 
 
 sub clear_rules {
-    my($self, $netloc) = @_;
+    my ($self, $netloc) = @_;
     delete $self->{'loc'}{$netloc}{'rules'};
 }
 
 
 sub rules {
-    my($self, $netloc) = @_;
+    my ($self, $netloc) = @_;
     if (defined $self->{'loc'}{$netloc}{'rules'}) {
         return @{$self->{'loc'}{$netloc}{'rules'}};
     }

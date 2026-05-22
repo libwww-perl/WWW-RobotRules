@@ -10,6 +10,7 @@ lint-failure-exit-codes = [2]
 [commands.perlimports]
 type    = "both"
 include = ["**/*.{pl,pm,t,psgi}"]
+exclude = ["t/rules-dbm.t"]
 cmd     = ["perlimports"]
 lint-flags = ["--lint"]
 tidy-flags = ["-i"]
