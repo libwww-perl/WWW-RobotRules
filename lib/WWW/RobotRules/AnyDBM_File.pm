@@ -2,7 +2,7 @@ package WWW::RobotRules::AnyDBM_File;
 use strict;
 
 use WWW::RobotRules ();
-our @ISA = qw(WWW::RobotRules);
+our @ISA     = qw(WWW::RobotRules);
 our $VERSION = '6.03';
 
 use Carp ();
@@ -13,9 +13,9 @@ sub new {
     my ($class, $ua, $file) = @_;
     Carp::croak('WWW::RobotRules::AnyDBM_File filename required') unless $file;
 
-    my $self = bless { }, $class;
+    my $self = bless {}, $class;
     $self->{'filename'} = $file;
-    tie %{$self->{'dbm'}}, 'AnyDBM_File', $file, O_CREAT|O_RDWR, 0600
+    tie %{$self->{'dbm'}}, 'AnyDBM_File', $file, O_CREAT | O_RDWR, 0600
         or Carp::croak("Can't open $file: $!");
 
     if ($ua) {
@@ -31,11 +31,12 @@ sub new {
 }
 
 sub agent {
-    my($self, $newname) = @_;
+    my ($self, $newname) = @_;
     my $old = $self->{'dbm'}{"|ua-name|"};
     if (defined $newname) {
-        $newname =~ s!/?\s*\d+.\d+\s*$!!;  # loose version
+        $newname =~ s!/?\s*\d+.\d+\s*$!!;    # loose version
         unless ($old && $old eq $newname) {
+
             # Old info is now stale. Clear all keys through the tied
             # interface rather than untie+tie(O_TRUNC), which is a
             # symlink-follow TOCTOU on the DBM-backing file(s).
@@ -64,7 +65,7 @@ sub fresh_until {
     my ($self, $netloc, $fresh) = @_;
     my $old = $self->{'dbm'}{"$netloc|exp"};
     if ($old) {
-        $old =~ s/;.*//;  # remove cleartext
+        $old =~ s/;.*//;    # remove cleartext
     }
     if (defined $fresh) {
         $fresh .= "; " . localtime($fresh);
@@ -74,14 +75,14 @@ sub fresh_until {
 }
 
 sub visit {
-    my($self, $netloc, $time) = @_;
+    my ($self, $netloc, $time) = @_;
     $time ||= time;
 
     my $count = 0;
-    my $old = $self->{'dbm'}{"$netloc|vis"};
+    my $old   = $self->{'dbm'}{"$netloc|vis"};
     if ($old) {
         my $last;
-        ($count,$last) = split(/;\s*/, $old);
+        ($count, $last) = split(/;\s*/, $old);
         $time = $last if $last > $time;
     }
     $count++;
@@ -89,7 +90,7 @@ sub visit {
 }
 
 sub push_rules {
-    my($self, $netloc, @rules) = @_;
+    my ($self, $netloc, @rules) = @_;
     my $cnt = 1;
     $cnt++ while $self->{'dbm'}{"$netloc|r$cnt"};
 
@@ -100,7 +101,7 @@ sub push_rules {
 }
 
 sub clear_rules {
-    my($self, $netloc) = @_;
+    my ($self, $netloc) = @_;
     my $cnt = 1;
     while ($self->{'dbm'}{"$netloc|r$cnt"}) {
         delete $self->{'dbm'}{"$netloc|r$cnt"};
@@ -109,9 +110,9 @@ sub clear_rules {
 }
 
 sub rules {
-    my($self, $netloc) = @_;
+    my ($self, $netloc) = @_;
     my @rules = ();
-    my $cnt = 1;
+    my $cnt   = 1;
     while (1) {
         my $rule = $self->{'dbm'}{"$netloc|r$cnt"};
         last unless $rule;
