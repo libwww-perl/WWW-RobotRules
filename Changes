@@ -1,6 +1,7 @@
 Revision history for Perl distribution WWW-RobotRules
 
 {{$NEXT}}
+    - Doing a proper version bump.
 
 6.02      2026-05-21 14:45:27Z
     - WWW::RobotRules::AnyDBM_File::agent() no longer truncates the on-disk
