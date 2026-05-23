@@ -1,7 +1,7 @@
 package WWW::RobotRules;
 use strict;
 
-our $VERSION = '6.03';
+our $VERSION = '6.04';
 sub Version { $VERSION; }
 
 use URI ();
