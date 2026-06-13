@@ -16,7 +16,7 @@ sub new {
     my $self = WWW::RobotRules->new($name);
     $self = bless $self, $class;
 
-    tie %{$self->{'rules'}}, DB_File, $file, O_CREAT | O_RDWR, 0640, $DB_HASH;
+    tie %{$self->{'rules'}}, 'DB_File', $file, O_CREAT | O_RDWR, 0640, $DB_HASH;
 
     $self;
 }
