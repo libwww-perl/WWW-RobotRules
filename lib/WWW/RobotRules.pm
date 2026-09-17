@@ -4,22 +4,61 @@ use strict;
 our $VERSION = '6.04';
 sub Version { $VERSION; }
 
+# Takes bytes; codepoints above U+00FF pass through unchanged.
+sub _sanitize_for_log {
+    my $str = shift;
+    return $str unless defined $str;
+    $str =~ s/([\x00-\x08\x0A-\x1F\x7F-\xFF])/sprintf '\\x%02x', ord($1)/ge;
+    return $str;
+}
+
 use URI ();
 
+use constant DEFAULT_MAX_PARSE_BYTES    => 500 * 1024;
+use constant DEFAULT_MAX_PARSE_WARNINGS => 100;
+
 sub new {
-    my ($class, $ua) = @_;
+    my ($class, $ua, %opts) = @_;
 
     # This ugly hack is needed to ensure backwards compatibility.
     # The "WWW::RobotRules" class is now really abstract.
     $class = "WWW::RobotRules::InCore" if $class eq "WWW::RobotRules";
 
-    my $self = bless {}, $class;
+    my $self = bless {
+        max_parse_bytes    => $opts{max_parse_bytes},
+        max_parse_warnings => $opts{max_parse_warnings},
+    }, $class;
     $self->agent($ua);
     $self;
 }
 
 sub parse {
     my ($self, $robot_txt_uri, $txt, $fresh_until) = @_;
+
+    my $cap = defined $self->{max_parse_bytes}
+        ? $self->{max_parse_bytes}
+        : DEFAULT_MAX_PARSE_BYTES;
+    my $warn_cap = defined $self->{max_parse_warnings}
+        ? $self->{max_parse_warnings}
+        : DEFAULT_MAX_PARSE_WARNINGS;
+
+    if (defined $txt) {
+
+        # Copy to avoid mutating a caller's Readonly SV.
+        my $bytes = $txt;
+        utf8::encode($bytes) if utf8::is_utf8($bytes);
+        if (length($bytes) > $cap) {
+            warn(
+                sprintf(
+                    "RobotRules <%s>: input exceeds %d bytes; cache untouched\n",
+                    _sanitize_for_log("$robot_txt_uri"), $cap
+                )
+            );
+            return $self;
+        }
+        $txt = $bytes;
+    }
+
     $robot_txt_uri = URI->new("$robot_txt_uri");
     my $netloc = $robot_txt_uri->host . ":" . $robot_txt_uri->port;
 
@@ -32,6 +71,9 @@ sub parse {
     my $seen_disallow   = 0;     # watch for missing record separators
     my @me_disallowed   = ();    # rules disallowed for me
     my @anon_disallowed = ();    # rules disallowed for *
+
+    my $warn_count = 0;
+    my $warn_suppressed = 0;
 
     # blank lines are significant, so turn CRLF into LF to avoid generating
     # false ones
@@ -77,9 +119,20 @@ sub parse {
         }
         elsif (/^\s*Disallow\s*:\s*(.*)/i) {
             unless (defined $ua) {
-                warn
-                    "RobotRules <$robot_txt_uri>: Disallow without preceding User-agent\n"
-                    if $^W;
+                if ($^W) {
+                    if ($warn_count < $warn_cap) {
+                        warn(
+                            sprintf(
+                                "RobotRules <%s>: Disallow without preceding User-agent\n",
+                                _sanitize_for_log("$robot_txt_uri")
+                            )
+                        );
+                        $warn_count++;
+                    }
+                    else {
+                        $warn_suppressed++;
+                    }
+                }
                 $is_anon = 1;    # assume that User-agent: * was intended
             }
             my $disallow = $1;
@@ -111,9 +164,26 @@ sub parse {
             # ignore
         }
         else {
-            warn "RobotRules <$robot_txt_uri>: Malformed record: <$_>\n" if $^W;
+            if ($^W) {
+                if ($warn_count < $warn_cap) {
+                    my $snippet = length($_) > 200
+                        ? substr($_, 0, 200) . "..."
+                        : $_;
+                    warn(sprintf("RobotRules <%s>: Malformed record: <%s>\n",
+                        _sanitize_for_log("$robot_txt_uri"),
+                        _sanitize_for_log($snippet)));
+                    $warn_count++;
+                }
+                else {
+                    $warn_suppressed++;
+                }
+            }
         }
     }
+
+    warn(sprintf("RobotRules <%s>: %d further parse warnings suppressed\n",
+        _sanitize_for_log("$robot_txt_uri"), $warn_suppressed))
+        if $warn_suppressed;
 
     if ($is_me) {
         $self->push_rules($netloc, @me_disallowed);
@@ -329,15 +399,37 @@ The following methods are provided:
 
 =over 4
 
-=item $rules = WWW::RobotRules->new($robot_name)
+=item $rules = WWW::RobotRules->new($robot_name, %options)
 
 This is the constructor for WWW::RobotRules objects.  The first
-argument given to new() is the name of the robot.
+argument given to new() is the name of the robot.  Recognised
+options:
+
+=over
+
+=item C<max_parse_bytes>
+
+Maximum body size accepted by parse(), in bytes (default 500 KiB).
+
+=item C<max_parse_warnings>
+
+Maximum number of per-line parser warnings emitted by parse()
+before subsequent warnings collapse into a single trailing
+summary (default 100).
+
+=back
 
 =item $rules->parse($robot_txt_url, $content, $fresh_until)
 
 The parse() method takes as arguments the URL that was used to
 retrieve the F</robots.txt> file, and the contents of the file.
+
+An oversized C<$content> emits one warning and returns without
+touching the cache, so a single hostile fetch cannot poison
+previously-cached rules. Per-parse "Malformed record" / "Disallow
+without preceding User-agent" warnings (gated on C<$^W>) share a
+counter; excess warnings collapse into a trailing summary.
+Non-printable bytes in warn payloads are escaped as C<\xNN>.
 
 =item $rules->allowed($uri)
 
